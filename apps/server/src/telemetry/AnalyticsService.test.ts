@@ -117,4 +117,45 @@ it.layer(NodeServices.layer)("AnalyticsService test", (it) => {
       );
     }),
   );
+
+  it.effect("disables telemetry after a failed flush", () =>
+    Effect.gen(function* () {
+      let requestCount = 0;
+      const serverConfigLayer = ServerConfig.layerTest(process.cwd(), {
+        prefix: "t3-telemetry-failure-",
+      });
+
+      const telemetryLayer = AnalyticsService.layer.pipe(Layer.provideMerge(serverConfigLayer));
+      const configLayer = ConfigProvider.layer(
+        ConfigProvider.fromUnknown({
+          T3CODE_TELEMETRY_ENABLED: true,
+          T3CODE_POSTHOG_KEY: "phc_test_key",
+          T3CODE_POSTHOG_HOST: "",
+          T3CODE_TELEMETRY_FLUSH_BATCH_SIZE: 20,
+        }),
+      );
+      const batchServerLayer = HttpServer.serve(
+        Effect.sync(() => {
+          requestCount += 1;
+          return HttpServerResponse.jsonUnsafe({ error: "nope" }, { status: 500 });
+        }),
+      );
+      const runtimeLayer = telemetryLayer.pipe(
+        Layer.provide(configLayer),
+        Layer.provideMerge(NodeHttpServer.layerTest),
+      );
+
+      yield* Effect.gen(function* () {
+        yield* Layer.launch(batchServerLayer).pipe(Effect.forkScoped);
+        const analytics = yield* AnalyticsService.AnalyticsService;
+
+        yield* analytics.record("test.flush.failure", { index: 1 });
+        yield* analytics.flush;
+        yield* analytics.record("test.flush.failure", { index: 2 });
+        yield* analytics.flush;
+      }).pipe(Effect.provide(runtimeLayer));
+
+      assert.equal(requestCount, 1);
+    }),
+  );
 });

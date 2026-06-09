@@ -72,6 +72,7 @@ export const make = Effect.gen(function* () {
   const serverConfig = yield* ServerConfig.ServerConfig;
   const identifier = yield* getTelemetryIdentifier;
   const bufferRef = yield* Ref.make<ReadonlyArray<BufferedAnalyticsEvent>>([]);
+  const telemetryDisabledRef = yield* Ref.make(false);
   const clientType = serverConfig.mode === "desktop" ? "desktop-app" : "cli-web-client";
   const hostPlatform = yield* HostProcessPlatform;
   const hostArchitecture = yield* HostProcessArchitecture;
@@ -107,6 +108,7 @@ export const make = Effect.gen(function* () {
     events: ReadonlyArray<BufferedAnalyticsEvent>,
   ) {
     if (!telemetryConfig.enabled || !identifier) return;
+    if (yield* Ref.get(telemetryDisabledRef)) return;
 
     const payload = {
       api_key: telemetryConfig.posthogKey,
@@ -133,8 +135,19 @@ export const make = Effect.gen(function* () {
     );
   });
 
+  const disableTelemetryAfterFlushFailure = (cause: unknown) =>
+    Effect.gen(function* () {
+      yield* Ref.set(telemetryDisabledRef, true);
+      yield* Ref.set(bufferRef, []);
+      yield* Effect.logWarning("Telemetry flush failed; disabling telemetry for this process", {
+        cause,
+      });
+    });
+
   const flush: AnalyticsService["Service"]["flush"] = Effect.gen(function* () {
     while (true) {
+      if (yield* Ref.get(telemetryDisabledRef)) return;
+
       const batch = yield* Ref.modify(bufferRef, (current) => {
         if (current.length === 0) {
           return [[] as ReadonlyArray<BufferedAnalyticsEvent>, current] as const;
@@ -148,19 +161,14 @@ export const make = Effect.gen(function* () {
         return;
       }
 
-      yield* sendBatch(batch).pipe(
-        Effect.catch((error) =>
-          Ref.update(bufferRef, (current) => [...batch, ...current]).pipe(
-            Effect.flatMap(() => Effect.fail(error)),
-          ),
-        ),
-      );
+      yield* sendBatch(batch).pipe(Effect.catch(disableTelemetryAfterFlushFailure));
     }
-  }).pipe(Effect.catch((cause) => Effect.logError("Failed to flush telemetry", { cause })));
+  });
 
   const record: AnalyticsService["Service"]["record"] = Effect.fn("AnalyticsService.record")(
     function* (event, properties) {
       if (!telemetryConfig.enabled || !identifier) return;
+      if (yield* Ref.get(telemetryDisabledRef)) return;
 
       const enqueueResult = yield* enqueueBufferedEvent(event, properties);
       if (enqueueResult.dropped) {
