@@ -154,25 +154,29 @@ const ComposerPendingUserInputCard = memo(function ComposerPendingUserInputCard(
 
   return (
     <div className="px-4 py-3 sm:px-5">
-      {prompt.questions.length > 1 ? (
-        <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3">
+        {prompt.questions.length > 1 ? (
           <span className="flex h-5 items-center rounded-md bg-muted/60 px-1.5 text-[10px] font-medium tabular-nums text-muted-foreground/60">
             {questionIndex + 1}/{prompt.questions.length}
           </span>
-        </div>
-      ) : null}
-      <p className="text-sm text-foreground/90">{activeQuestion.question}</p>
+        ) : null}
+        <span className="text-[11px] font-semibold tracking-widest text-muted-foreground/50 uppercase">
+          {activeQuestion.header}
+        </span>
+      </div>
+      <p className="mt-1.5 text-sm text-foreground/90">{activeQuestion.question}</p>
       {activeQuestion.multiSelect ? (
         <p className="mt-1 text-xs text-muted-foreground/65">Select one or more options.</p>
       ) : null}
       <div className="mt-3 space-y-1">
         {activeQuestion.options.map((option, index) => {
+          const optimisticActiveForQuestion =
+            optimisticSingleSelect?.questionId === activeQuestion.id;
           const isOptimisticallySelected =
-            optimisticSingleSelect?.questionId === activeQuestion.id &&
-            optimisticSingleSelect.optionLabel === option.label;
-          const isSelected =
-            isOptimisticallySelected ||
-            (!customAnswerActive && progress.selectedOptionLabels.includes(option.label));
+            optimisticActiveForQuestion && optimisticSingleSelect.optionLabel === option.label;
+          const isSelected = optimisticActiveForQuestion
+            ? isOptimisticallySelected
+            : !customAnswerActive && progress.selectedOptionLabels.includes(option.label);
           const shortcutKey = index < 9 ? index + 1 : null;
           const className = cn(
             "group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-all duration-150",
@@ -213,6 +217,13 @@ const ComposerPendingUserInputCard = memo(function ComposerPendingUserInputCard(
               onClick={() => {
                 if (isResponding) return;
                 handleOptionSelection(activeQuestion.id, option.label);
+              }}
+              onKeyDown={(e) => {
+                if (isResponding) return;
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleOptionSelection(activeQuestion.id, option.label);
+                }
               }}
               className={className}
             >

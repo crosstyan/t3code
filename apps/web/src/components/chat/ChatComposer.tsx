@@ -808,8 +808,14 @@ export const ChatComposer = memo(function ChatComposer(props: ChatComposerProps)
     if (entry) {
       return getProviderDisplayName(providerStatuses, entry.driver);
     }
+    const instanceEntry = providerInstanceEntries.find(
+      (e) => e.instanceId === activeThreadModelSelection.instanceId,
+    );
+    if (instanceEntry) {
+      return instanceEntry.displayName;
+    }
     return formatProviderDisplayName(activeThreadModelSelection.instanceId);
-  }, [providerStatuses, activeThreadModelSelection]);
+  }, [providerStatuses, providerInstanceEntries, activeThreadModelSelection]);
 
   // ------------------------------------------------------------------
   // Composer-local state
