@@ -349,8 +349,8 @@ label:has(> select#reasoning-effort) select {
   font-size: 0.75rem;
 }
 
-.chat-markdown-file-link {
-  display: inline;
+.chat-markdown a.chat-markdown-file-link {
+  display: inline-block;
   color: var(--primary);
   font-weight: 600;
   text-decoration: underline;
@@ -359,12 +359,12 @@ label:has(> select#reasoning-effort) select {
   transition: color 120ms ease;
 }
 
-.chat-markdown-file-link:hover {
+.chat-markdown a.chat-markdown-file-link:hover {
   color: color-mix(in srgb, var(--primary) 80%, var(--foreground));
   text-decoration-thickness: 2px;
 }
 
-.chat-markdown-file-link:focus-visible {
+.chat-markdown a.chat-markdown-file-link:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--ring) 70%, transparent);
   border-radius: 0.125rem;
