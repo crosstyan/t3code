@@ -202,7 +202,7 @@ export function workEntryIndicatesToolFailure(entry: WorkLogEntry): boolean {
     return true;
   }
   const ls = entry.toolLifecycleStatus;
-  if (ls === "failed" || ls === "declined") {
+  if (ls === "failed" || ls === "declined" || ls === "stopped") {
     return true;
   }
   if (!workLogEntryIsToolLike(entry)) {
@@ -238,9 +238,6 @@ export function workEntryIndicatesToolSuccess(entry: WorkLogEntry): boolean {
     return false;
   }
   if (ls === "inProgress") {
-    return false;
-  }
-  if (ls === "stopped") {
     return false;
   }
   return true;

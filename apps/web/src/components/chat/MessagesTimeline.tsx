@@ -591,10 +591,13 @@ const WorkGroupSection = memo(function WorkGroupSection({
   groupedEntries: Extract<MessagesTimelineRow, { kind: "work" }>["groupedEntries"];
 }) {
   const { workspaceRoot } = use(TimelineRowCtx);
+  const activity = use(TimelineRowActivityCtx);
   const [isExpanded, setIsExpanded] = useState(false);
+  const turnSettled = !activity.activeTurnInProgress;
   const nonEmptyEntries = useMemo(
-    () => groupedEntries.filter((entry) => !workEntryIndicatesToolNeutralStatus(entry)),
-    [groupedEntries],
+    () =>
+      groupedEntries.filter((entry) => turnSettled || !workEntryIndicatesToolNeutralStatus(entry)),
+    [groupedEntries, turnSettled],
   );
   const hasOverflow = nonEmptyEntries.length > MAX_VISIBLE_WORK_LOG_ENTRIES;
   const visibleEntries =
