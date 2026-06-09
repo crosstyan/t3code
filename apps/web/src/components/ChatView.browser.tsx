@@ -1416,13 +1416,15 @@ async function waitForButtonByText(text: string): Promise<HTMLButtonElement> {
   return waitForElement(() => findButtonByText(text), `Unable to find "${text}" button.`);
 }
 
-function findButtonContainingText(text: string): HTMLButtonElement | null {
-  return (Array.from(document.querySelectorAll("button")).find((button) =>
-    button.textContent?.includes(text),
-  ) ?? null) as HTMLButtonElement | null;
+function findButtonContainingText(text: string): HTMLElement | null {
+  return (
+    Array.from(document.querySelectorAll<HTMLElement>('button, [role="button"]')).find((button) =>
+      button.textContent?.includes(text),
+    ) ?? null
+  );
 }
 
-async function waitForButtonContainingText(text: string): Promise<HTMLButtonElement> {
+async function waitForButtonContainingText(text: string): Promise<HTMLElement> {
   return waitForElement(
     () => findButtonContainingText(text),
     `Unable to find button containing "${text}".`,
