@@ -79,7 +79,7 @@ const ComposerPendingUserInputCard = memo(function ComposerPendingUserInputCard(
       return;
     }
     if (
-      progress.customAnswer.trim().length === 0 &&
+      progress.customAnswer.trim().length > 0 ||
       progress.selectedOptionLabels.includes(optimisticSingleSelect.optionLabel)
     ) {
       setOptimisticSingleSelect(null);
@@ -171,8 +171,8 @@ const ComposerPendingUserInputCard = memo(function ComposerPendingUserInputCard(
             optimisticSingleSelect?.questionId === activeQuestion.id &&
             optimisticSingleSelect.optionLabel === option.label;
           const isSelected =
-            isOptimisticallySelected ||
-            (!customAnswerActive && progress.selectedOptionLabels.includes(option.label));
+            !customAnswerActive &&
+            (isOptimisticallySelected || progress.selectedOptionLabels.includes(option.label));
           const shortcutKey = index < 9 ? index + 1 : null;
           const className = cn(
             "group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-all duration-150",
