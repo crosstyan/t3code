@@ -87,7 +87,20 @@ function ProviderCustomColorPanel(props: {
   const { onCommit } = props;
   const initialHsv = useMemo(() => hexToHsv(props.value), [props.value]);
   const [hsv, setHsv] = useState(initialHsv);
+
+  useEffect(() => {
+    setHsv(initialHsv);
+  }, [initialHsv]);
+
   const currentColor = hsvToHex(hsv.h, hsv.s, hsv.v);
+  const [hexInput, setHexInput] = useState(currentColor);
+  const hexInputFocused = useRef(false);
+
+  useEffect(() => {
+    if (!hexInputFocused.current) {
+      setHexInput(currentColor);
+    }
+  }, [currentColor]);
 
   const commitHsv = useCallback(
     (nextHsv: typeof hsv) => {
@@ -162,12 +175,21 @@ function ProviderCustomColorPanel(props: {
           />
         </div>
         <input
-          value={currentColor}
+          value={hexInput}
+          onFocus={() => {
+            hexInputFocused.current = true;
+          }}
+          onBlur={() => {
+            hexInputFocused.current = false;
+            setHexInput(currentColor);
+          }}
           onChange={(event) => {
             const nextColor = event.currentTarget.value;
-            if (!/^#[\da-f]{6}$/i.test(nextColor)) return;
-            setHsv(hexToHsv(nextColor));
-            props.onCommit(nextColor);
+            setHexInput(nextColor);
+            if (/^#[\da-f]{6}$/i.test(nextColor)) {
+              setHsv(hexToHsv(nextColor));
+              props.onCommit(nextColor);
+            }
           }}
           className="h-8 rounded-md border border-input bg-background px-2 font-mono text-xs text-foreground outline-none transition-colors focus:border-ring"
           aria-label="Custom hex accent color"
