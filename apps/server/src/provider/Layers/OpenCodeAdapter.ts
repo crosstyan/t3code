@@ -1449,6 +1449,15 @@ export function makeOpenCodeAdapter(
         );
       });
 
+    const compactThread: OpenCodeAdapterShape["compactThread"] = () =>
+      Effect.fail(
+        new ProviderAdapterRequestError({
+          provider: PROVIDER,
+          method: "thread/compact/start",
+          detail: "Manual context compaction is only supported for Codex.",
+        }),
+      );
+
     return {
       provider: PROVIDER,
       capabilities: {
@@ -1457,6 +1466,7 @@ export function makeOpenCodeAdapter(
       startSession,
       sendTurn,
       interruptTurn,
+      compactThread,
       respondToRequest,
       respondToUserInput,
       stopSession,

@@ -3,6 +3,7 @@ import { INLINE_TERMINAL_CONTEXT_PLACEHOLDER } from "./lib/terminalContext";
 
 export type ComposerTriggerKind = "path" | "slash-command" | "skill";
 export type ComposerSlashCommand = "model" | "plan" | "default";
+export type ComposerStandaloneSlashCommand = Exclude<ComposerSlashCommand, "model"> | "compact";
 
 export interface ComposerTrigger {
   kind: ComposerTriggerKind;
@@ -257,12 +258,13 @@ export function detectComposerTrigger(text: string, cursorInput: number): Compos
 
 export function parseStandaloneComposerSlashCommand(
   text: string,
-): Exclude<ComposerSlashCommand, "model"> | null {
-  const match = /^\/(plan|default)\s*$/i.exec(text.trim());
+): ComposerStandaloneSlashCommand | null {
+  const match = /^\/(plan|default|compact)\s*$/i.exec(text.trim());
   if (!match) {
     return null;
   }
   const command = match[1]?.toLowerCase();
+  if (command === "compact") return "compact";
   if (command === "plan") return "plan";
   return "default";
 }

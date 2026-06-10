@@ -1443,12 +1443,22 @@ export function makeGrokAdapter(grokSettings: GrokSettings, options?: GrokAdapte
 
     const streamEvents = Stream.fromPubSub(runtimeEventPubSub);
 
+    const compactThread: GrokAdapterShape["compactThread"] = () =>
+      Effect.fail(
+        new ProviderAdapterRequestError({
+          provider: PROVIDER,
+          method: "thread/compact/start",
+          detail: "Manual context compaction is only supported for Codex.",
+        }),
+      );
+
     return {
       provider: PROVIDER,
       capabilities: { sessionModelSwitch: "in-session" },
       startSession,
       sendTurn,
       interruptTurn,
+      compactThread,
       readThread,
       rollbackThread,
       respondToRequest,

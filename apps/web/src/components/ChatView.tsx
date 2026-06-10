@@ -1013,6 +1013,7 @@ function ChatViewContent(props: ChatViewProps) {
   const interruptThreadTurn = useAtomCommand(threadEnvironment.interruptTurn, {
     reportFailure: false,
   });
+  const compactThread = useAtomCommand(threadEnvironment.compactThread, { reportFailure: false });
   const respondToThreadApproval = useAtomCommand(threadEnvironment.respondToApproval, {
     reportFailure: false,
   });
@@ -3643,6 +3644,43 @@ function ChatViewContent(props: ChatViewProps) {
         ? parseStandaloneComposerSlashCommand(trimmed)
         : null;
     if (standaloneSlashCommand) {
+      if (standaloneSlashCommand === "compact") {
+        if (!isServerThread) {
+          setThreadError(activeThread.id, "Start the thread before compacting context.");
+          return;
+        }
+        sendInFlightRef.current = true;
+        try {
+          setThreadError(activeThread.id, null);
+          const result = await compactThread({
+            environmentId,
+            input: {
+              threadId: activeThread.id,
+            },
+          });
+          if (result._tag === "Failure") {
+            if (!isAtomCommandInterrupted(result)) {
+              const error = squashAtomCommandFailure(result);
+              setThreadError(
+                activeThread.id,
+                error instanceof Error ? error.message : "Failed to compact context.",
+              );
+            }
+            return;
+          }
+          promptRef.current = "";
+          clearComposerDraftContent(composerDraftTarget);
+          composerRef.current?.resetCursorState();
+        } catch (err) {
+          setThreadError(
+            activeThread.id,
+            err instanceof Error ? err.message : "Failed to compact context.",
+          );
+        } finally {
+          sendInFlightRef.current = false;
+        }
+        return;
+      }
       handleInteractionModeChange(standaloneSlashCommand);
       promptRef.current = "";
       clearComposerDraftContent(composerDraftTarget);

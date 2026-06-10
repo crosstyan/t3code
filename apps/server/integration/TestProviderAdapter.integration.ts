@@ -483,6 +483,13 @@ export const makeTestProviderAdapterHarness = (options?: MakeTestProviderAdapter
       });
     };
 
+    const compactThread: ProviderAdapterShape<ProviderAdapterError>["compactThread"] = (threadId) =>
+      Effect.sync(() => sessions.get(threadId)).pipe(
+        Effect.flatMap((state) =>
+          state ? Effect.void : Effect.fail(sessionNotFound(provider, threadId)),
+        ),
+      );
+
     const stopAll: ProviderAdapterShape<ProviderAdapterError>["stopAll"] = () =>
       Effect.sync(() => {
         sessions.clear();
@@ -496,6 +503,7 @@ export const makeTestProviderAdapterHarness = (options?: MakeTestProviderAdapter
       startSession,
       sendTurn,
       interruptTurn,
+      compactThread,
       respondToRequest,
       respondToUserInput,
       stopSession,

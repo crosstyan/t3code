@@ -3846,6 +3846,15 @@ export const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
     ),
   );
 
+  const compactThread: ClaudeAdapterShape["compactThread"] = () =>
+    Effect.fail(
+      new ProviderAdapterRequestError({
+        provider: PROVIDER,
+        method: "thread/compact/start",
+        detail: "Manual context compaction is only supported for Codex.",
+      }),
+    );
+
   return {
     provider: PROVIDER,
     capabilities: {
@@ -3854,6 +3863,7 @@ export const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
     startSession,
     sendTurn,
     interruptTurn,
+    compactThread,
     readThread,
     rollbackThread,
     respondToRequest,

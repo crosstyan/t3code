@@ -2,6 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 import * as Schema from "effect/Schema";
 
 import {
+  ProviderCompactThreadInput,
   ProviderEvent,
   ProviderSendTurnInput,
   ProviderSession,
@@ -10,6 +11,7 @@ import {
 
 const decodeProviderSessionStartInput = Schema.decodeUnknownSync(ProviderSessionStartInput);
 const decodeProviderSendTurnInput = Schema.decodeUnknownSync(ProviderSendTurnInput);
+const decodeProviderCompactThreadInput = Schema.decodeUnknownSync(ProviderCompactThreadInput);
 const decodeProviderSession = Schema.decodeUnknownSync(ProviderSession);
 const decodeProviderEvent = Schema.decodeUnknownSync(ProviderEvent);
 
@@ -150,6 +152,16 @@ describe("ProviderSendTurnInput", () => {
     expect(parsed.modelSelection?.instanceId).toBe("claudeAgent");
     expect(getOptionValue(parsed.modelSelection?.options, "effort")).toBe("ultrathink");
     expect(getOptionValue(parsed.modelSelection?.options, "fastMode")).toBe(true);
+  });
+});
+
+describe("ProviderCompactThreadInput", () => {
+  it("accepts a thread id", () => {
+    const parsed = decodeProviderCompactThreadInput({
+      threadId: "thread-1",
+    });
+
+    expect(parsed.threadId).toBe("thread-1");
   });
 });
 

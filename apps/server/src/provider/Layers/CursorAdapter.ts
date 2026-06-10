@@ -1161,12 +1161,22 @@ export function makeCursorAdapter(
 
     const streamEvents = Stream.fromPubSub(runtimeEventPubSub);
 
+    const compactThread: CursorAdapterShape["compactThread"] = () =>
+      Effect.fail(
+        new ProviderAdapterRequestError({
+          provider: PROVIDER,
+          method: "thread/compact/start",
+          detail: "Manual context compaction is only supported for Codex.",
+        }),
+      );
+
     return {
       provider: PROVIDER,
       capabilities: { sessionModelSwitch: "in-session" },
       startSession,
       sendTurn,
       interruptTurn,
+      compactThread,
       readThread,
       rollbackThread,
       respondToRequest,
