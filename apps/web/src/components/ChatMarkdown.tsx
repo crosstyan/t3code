@@ -274,6 +274,10 @@ function MarkdownTable({ children, ...props }: React.ComponentProps<"table">) {
       [...(table.tHead?.rows[0]?.cells ?? [])].forEach((cell, columnIndex) => {
         cell.style.minWidth = `${columnWidths[columnIndex] ?? cell.getBoundingClientRect().width}px`;
       });
+    } else {
+      [...(table.tHead?.rows[0]?.cells ?? [])].forEach((cell) => {
+        cell.style.minWidth = "";
+      });
     }
 
     setExpanded((value) => !value);
