@@ -92,6 +92,9 @@ interface ChatMarkdownProps {
   className?: string;
   /** Treat single newlines as hard breaks — chat-style user input. */
   lineBreaks?: boolean;
+  /** Render inline — uses `span` wrapper and suppresses block paragraph margins
+   *  so the markdown content can flow with surrounding inline elements. */
+  inline?: boolean;
 }
 
 const EMPTY_MARKDOWN_SKILLS: ReadonlyArray<Pick<ServerProviderSkill, "name" | "displayName">> = [];
@@ -936,6 +939,7 @@ function ChatMarkdown({
   skills = EMPTY_MARKDOWN_SKILLS,
   className,
   lineBreaks = false,
+  inline = false,
 }: ChatMarkdownProps) {
   const { resolvedTheme } = useTheme();
   const diffThemeName = resolveDiffThemeName(resolvedTheme);
@@ -975,6 +979,9 @@ function ChatMarkdown({
   const markdownComponents = useMemo<Components>(
     () => ({
       p({ node: _node, children, ...props }) {
+        if (inline) {
+          return <span {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</span>;
+        }
         return <p {...props}>{renderSkillInlineMarkdownChildren(children, skills)}</p>;
       },
       li({ node: _node, children, ...props }) {
@@ -1060,6 +1067,7 @@ function ChatMarkdown({
     [
       diffThemeName,
       fileLinkParentSuffixByPath,
+      inline,
       isStreaming,
       markdownFileLinkMetaByHref,
       resolvedTheme,
@@ -1067,10 +1075,14 @@ function ChatMarkdown({
     ],
   );
 
+  const Wrapper = inline ? "span" : "div";
+
   return (
-    <div
+    <Wrapper
       className={cn(
-        "chat-markdown w-full min-w-0 text-sm leading-relaxed text-foreground/80",
+        "chat-markdown text-sm leading-relaxed text-foreground/80",
+        !inline && "w-full min-w-0",
+        inline && "chat-markdown-inline",
         className,
       )}
       onCopy={handleCopy}
@@ -1087,7 +1099,7 @@ function ChatMarkdown({
       >
         {text}
       </ReactMarkdown>
-    </div>
+    </Wrapper>
   );
 }
 

@@ -911,6 +911,7 @@ const UserMessageBody = memo(function UserMessageBody(props: {
               skills={props.skills}
               className="text-foreground"
               lineBreaks
+              inline
             />,
           );
         }
@@ -933,6 +934,7 @@ const UserMessageBody = memo(function UserMessageBody(props: {
               skills={props.skills}
               className="text-foreground"
               lineBreaks
+              inline
             />,
           );
         }
@@ -968,6 +970,7 @@ const UserMessageBody = memo(function UserMessageBody(props: {
           skills={props.skills}
           className="text-foreground"
           lineBreaks
+          inline
         />,
       );
     } else if (inlinePrefix.length === 0) {

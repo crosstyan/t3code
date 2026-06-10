@@ -292,6 +292,17 @@ label:has(> select#reasoning-effort) select {
   word-break: break-word;
 }
 
+/* Inline variant: flows with surrounding inline/text content. */
+.chat-markdown-inline {
+  display: inline;
+}
+
+.chat-markdown-inline p,
+.chat-markdown-inline span {
+  display: inline;
+  margin: 0;
+}
+
 .chat-markdown > :first-child {
   margin-top: 0;
 }
